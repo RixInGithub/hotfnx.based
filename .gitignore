@@ -1,0 +1,3 @@
+flumiInstall/*
+*.pem
+!localhost*.pem
