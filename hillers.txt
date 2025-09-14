@@ -1,0 +1,32 @@
+the official hillers system
+
+i am TIRED of having to use kilobytes, kibibytes, blablablabytes, theyre all just so fucking confusing.
+
+besides, the bytes system is rlly unstable flimsy.
+i see kilobytes as 1000 bytes in one source, and some other says 1024, so yk.
+
+i am going to make this as straightforward as possible.
+
+1. the fun size!
+
+first up, we have bytes. a byte is a single ascii characters. a byte consists of two nybbles, and a nybble consists of four bits which have a binary 0/1 state.
+
+then we have a single microhiller, marked as μH or uH. a microhiller has 19 bytes. why? because i fucking said so.
+
+then after a microhiller, comes a hiller, marked as H. a hiller has 4 microhillers, or 76 bytes. coolio!
+
+then come...
+
+2. the small guys.
+
+fuck it im doing this as a list now:
+
+mH: macrohiller, which is 8 hillers
+kH: kilohiller, 10 macrohillers
+hH: har(monic)hiller, 4 kilohillers (i just wanted to have hh)
+wH: wowhiller, 20 harhillers
+
+3. the bigger fellas
+
+tH: terahiller, 20 wowhillers.
+qH: qwenhiller, 5 terahillers.

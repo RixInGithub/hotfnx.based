@@ -26,6 +26,17 @@ stats = {
 	GATEWAY_TIMEOUT: 504
 }
 
+function bytesToHillerSys(b) { // code stolen from hiller.js on my termux
+	hillers = [["B",1],["μH",19],["H",4],["mH",8],["kH",10],["hH",4],["wH",20],["tH",20],["qH",5]]
+	hillers.forEach(function([n,sz],idx,h){
+		if(idx<1)return
+		h[idx]=[n,h.slice(1,idx+1).reduce(function(a,b){return(b[1])*a},1)]
+	})
+	names = {B: "byte", μH: "microhiller", H: "hiller", mH: "macrohiller", kH: "kilohiller", hH: "harhiller", wH: "wowhiller", tH: "terahiller", qH: "qwenhiller"}
+	var biggest = hillers[hillers.slice(1).reduce(function(c,d,idx){return((b<(d[1]*4))&&(b>hillers[idx][1]))?(idx+1):c},0)]
+	return [b/biggest[1], biggest[0], names[biggest[0]]]
+}
+
 net.createServer({/*noDelay:true*/}, async function(tcp) {
 	// tcp.on("data",function(a){console.log("eyy i got smth over here (b4 middle man init)", a+"")})
 	var hndshk = ""+(await new Promise(function(a){tcp.once("data",a)}))
@@ -73,17 +84,22 @@ gurt-version: 1.0.0
 		},
 		status: "OK"
 	}
-	var resp = await hdlr(hReq, hRes)
+	var resp = Buffer.from(await hdlr(hReq, hRes))
 	if (typeof(stats[hRes.status])!="string") hRes.status = "OK" // fallback in case some stupid future me decided to troll present me
-	await new Promise(function(a){tls.write(Buffer.from(`
+	var biggest = bytesToHillerSys(resp.length)
+	// `\x1b[1m${sz.toFixed(8)}\x1b[0m`,unit[0],`(${names[unit[0]]}${(sz==1)?"":"s"})`
+	console.log(`${mtd} ${p} GURT/1.0.0: ${stats[hRes.status]} (${hdrs["content-type"]}, ${biggest[0].toFixed(8)} ${biggest[2]+((biggest[0]===1)?"":"s")} (${resp.length}B))`)
+	await new Promise(function(a){tls.write(Buffer.concat([Buffer.from(`
 GURT/1.0.0 ${stats[hRes.status]} ${hRes.status}
 ${Object.entries(hdrs).map(function(a){return(a).join(":\x20")}).join("\n")}
 date: ${new Date().toUTCString()}
 content-length: ${resp.length}
 
 
-`.slice(1,-1).replaceAll("\n","\r\n")+resp,"utf8"),null,a)})
+`.slice(1,-1).replaceAll("\n","\r\n"),"utf8"),resp]),null,a)})
 	await new Promise(function(a){setTimeout(a,2e3)})
 	tls.destroy()
 	tcp.destroy()
-}).listen(4878)
+}).listen(4878, function() {
+	console.log("get\n  yOur\n:4878\n  Ready")
+})

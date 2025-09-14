@@ -1,0 +1,58 @@
+<html>
+	<head>
+		<title>We will be right back!</title>
+		<font name="hilaricons" src="/Hilaricons.woff2">
+		<font name="trebuchetms" src="/TrebuchetMS.woff2">
+		<script type="application/lua">
+			-- right, the css engine only supports EITHER the tag name or id/class. not both. like im fucking USED TO
+		</script>
+		<style>
+			body {
+				bg-[#ddd]
+				w-full
+				font-trebuchetms
+			}
+			
+			#idemfk {
+				w-full
+				flex
+				flex-col
+				items-center
+			}
+
+			#info {
+				bg-[#eee]
+				w-1/2
+				p-5
+				rounded-[20px]
+				mt-20
+			}
+			
+			p {text-center font-trebuchetms}
+			
+			#hiccup {text-center font-hilaricons}
+		</style>
+		<script type="application/lua">
+			while false do
+				local hiccup = gurt.select("#innerHiccup")
+				trace.log(hiccup)
+				hiccup:createTween():to("rotation", 360):duration(5):easing("in"):transition("circ"):play()
+			end
+			setTimeout(function()gurt.location.goto("<%- b.replaceAll("\"", "\\\"") %>")end, 5000)
+		</script>
+		<script type="application/lua">-- <i id="innerHiccup">󷙸</i></script>
+	</head>
+	<body>
+		<div id="idemfk">
+			<div id="info">
+				<p>We are going to redirect you in a very short moment!</p>
+				<div style="mb-5"></div>
+				<p><%- a.split("").map(function(a){return`&#${a.codePointAt(0)};`}).join("") %> ==> <%- b.split("").map(function(a){return`&#${a.codePointAt(0)};`}).join("") %></p>
+				<div style="mb-5"></div>
+				<p><a href="<%- b.split("").map(function(a){return`&#${a.codePointAt(0)};`}).join("") %>">Can't wait?</a></p>
+				<div style="mb-5"></div>
+				<p id="hiccup">INSERT A SPINNER HERE (see outpoot/gurted issue #90)</p>
+			</div>
+		</div>
+	</body>
+</html>
