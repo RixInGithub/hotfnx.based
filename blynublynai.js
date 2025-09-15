@@ -31,14 +31,14 @@ function staticHost(root, ...f) {
 		})
 		var mime = mimes[a.split(".").toReversed()[0]]||dfltMime
 		if (a.split(".")==a) mime = mimes.htm
-		out[a] = function(rq,rs){return[rs.h("content-type",mime),require("fs").readFileSync(require("path").join(root,target),null)][1]}
+		out[a] = function(rq,rs){return[rs.h("content-type",mime),require("fs").readFileSync(require("path").join(root,target),null)][1]} // i made it a buffer cuz font files dont work when i read them as strings apparently 😒
 	})
 	return out
 }
 
 module.exports = {
 	...staticHost(require("path").join(__dirname,"static"), "/", "/style.css", "/Hilaricons.woff2", "/TrebuchetMS.woff2"),
-	...staticHost(require("path").join(__dirname,"pix"), "/hotfnx16.png", "/hotfnx32.png", "/hotfnx64.png", "/hotfnx128.png", "/hotfnx256.png", "/hotfnx512.png", "/hotfnx.svg"),
+	...staticHost(require("path").join(__dirname,"pix"), ...require("fs").readdirSync(require("path").join(__dirname,"pix")).map(function(a){return"/"+a})),
 	["/testmajij/"](req, res) {
 		res.h("content-type", "text/html")
 		return redirector("/testmajij/", "/") // yes, this is VERY intentional

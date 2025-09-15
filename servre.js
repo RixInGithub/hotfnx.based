@@ -1,8 +1,9 @@
 net = require("net")
 void({readFileSync:read}=require("fs"))
 
-key = "localhost+2-key.pem"
-cert = "localhost+2.pem"
+localhost = true
+key = `key${localhost?"Local":""}.pem`
+cert = `cert${localhost?"Local":""}.pem`
 handlers = require("./blynublynai.js")
 stats = {
 	OK: 200,

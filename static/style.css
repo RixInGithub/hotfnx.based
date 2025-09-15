@@ -1,3 +1,9 @@
 body {
 	font-trebuchetms
 }
+
+#navbar {
+	flex
+	p-2
+	gap-2
+}
