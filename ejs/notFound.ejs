@@ -1,0 +1,59 @@
+<html>
+	<head>
+		<title>Spill the beans, man.</title>
+		<font name="hilaricons" src="/Hilaricons.woff2">
+		<font name="trebuchetms" src="/TrebuchetMS.woff2">
+		<icon src="gurt://localhost/hotfnx16.png">
+		<style>
+			body {
+				bg-[#ddd]
+				w-full
+				font-trebuchetms
+			}
+			
+			#idemfk {
+				w-full
+				flex
+				flex-col
+				items-center
+			}
+
+			#info {
+				bg-[#eee]
+				w-1/2
+				p-5
+				rounded-[20px]
+				mt-20
+			}
+			
+			p, h1, h4 {text-center font-trebuchetms}
+			
+			p {text-sm}
+			
+			h1 {text-6xl}
+			
+			h4 {font-bold}
+			
+			#icon {text-center font-hilaricons}
+			
+			#rowful {
+				flex
+				justify-center
+				items-center
+			}
+		</style>
+	</head>
+	<body>
+		<div id="idemfk">
+			<div id="info">
+				<h1 id="icon"><%- String.fromCodePoint([0xf7692, 0xf7685, 0xf7693, 0xf7695, 0xf7682][Math.floor(Math.random()*5)]) %></h1>
+				<div style="h-5"></div>
+				<h4>Spill the beans.</h4>
+				<div style="h-5"></div>
+				<p>What do you exactly mean by "<%- a.split("").map(function(a){return`&#${a.codePointAt(0)};`}).join("") %>"?</p>
+				<div style="h-5"></div>
+				<div id="rowful"><p>Okay Mr. Funnyman, to the&#160;</p><p><a href="/">homepage</a></p><p>. Now!</p>
+			</div>
+		</div>
+	</body>
+</html>

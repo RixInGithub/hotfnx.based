@@ -17,7 +17,7 @@ mimes = { // taken from official gurty
 dfltMime = "application/octet-stream"
 
 function redirector(a, b) {
-	return require("ejs").render(require("fs").readFileSync("static/redirector.ejs","utf8"), {a,b})
+	return require("ejs").render(require("fs").readFileSync("ejs/redirector.ejs","utf8"), {a,b})
 }
 
 function staticHost(root, ...f) {
@@ -36,15 +36,29 @@ function staticHost(root, ...f) {
 	return out
 }
 
-module.exports = {
-	...staticHost(require("path").join(__dirname,"static"), "/", "/style.css", "/Hilaricons.woff2", "/TrebuchetMS.woff2"),
+async function iThinkItsA_404({url:a}, res) {
+	res.status = "NOT_FOUND"
+	// return `<html><body><p>why dawg, ofc you know ${req.url} doesnt exist homie</p></body></html>`
+	return require("ejs").render(require("fs").readFileSync("ejs/notFound.ejs","utf8"), {a})
+}
+
+var basicRules = new Map(Object.entries({
+	...staticHost(require("path").join(__dirname,"static"), "/", "/style.css", "/Hilaricons.woff2"),
 	...staticHost(require("path").join(__dirname,"pix"), ...require("fs").readdirSync(require("path").join(__dirname,"pix")).map(function(a){return"/"+a})),
+	...staticHost(require("path").join(__dirname,"trebuchetms"), ...require("fs").readdirSync(require("path").join(__dirname,"trebuchetms")).map(function(a){return"/"+a})),
 	["/testmajij/"](req, res) {
 		res.h("content-type", "text/html")
 		return redirector("/testmajij/", "/") // yes, this is VERY intentional
-	},
-	async default(req, res) {
-		res.status = "NOT_FOUND"
-		return `<html><body><p>why dawg, ofc you know ${req.url} doesnt exist homie</p></body></html>`
 	}
+}))
+
+var sigmaRules = new Map([
+	[new RegExp("^/[A-Z]_[a-h0-9]{4}/(.*)"), async function(req, res) { 
+		
+	}]
+])
+
+module.exports = function handlor(h) {
+	var shyt = ([basicRules.get(h)]).find(function(a){return(a)}) // find the first unundefined shyt
+	return(shyt?shyt:iThinkItsA_404)//(req, res)
 }

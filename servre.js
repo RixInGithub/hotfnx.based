@@ -4,7 +4,7 @@ void({readFileSync:read}=require("fs"))
 localhost = true
 key = `key${localhost?"Local":""}.pem`
 cert = `cert${localhost?"Local":""}.pem`
-handlers = require("./blynublynai.js")
+blynas = require("./blynublynai.js")
 stats = {
 	OK: 200,
 	CREATED: 201,
@@ -26,58 +26,52 @@ stats = {
 	SERVICE_UNAVAILABLE: 503,
 	GATEWAY_TIMEOUT: 504
 }
+// code MOSTLY stolen from hillers.js on my termux:
+hillers = [["B",1],["μH",19],["H",4],["mH",8],["kH",10],["hH",4],["wH",20],["tH",20],["qH",5]]
+hillers.forEach(function([n,sz],idx,h){
+	if(idx<1)return
+	h[idx]=[n,h.slice(1,idx+1).reduce(function(a,b){return(b[1])*a},1)]
+})
+names = {B:"byte",μH:"microhiller",H:"hiller",mH:"macrohiller",kH:"kilohiller",hH:"harhiller",wH:"wowhiller",tH:"terahiller",qH:"qwenhiller"}
 
-function bytesToHillerSys(b) { // code stolen from hiller.js on my termux
-	hillers = [["B",1],["μH",19],["H",4],["mH",8],["kH",10],["hH",4],["wH",20],["tH",20],["qH",5]]
-	hillers.forEach(function([n,sz],idx,h){
-		if(idx<1)return
-		h[idx]=[n,h.slice(1,idx+1).reduce(function(a,b){return(b[1])*a},1)]
-	})
-	names = {B: "byte", μH: "microhiller", H: "hiller", mH: "macrohiller", kH: "kilohiller", hH: "harhiller", wH: "wowhiller", tH: "terahiller", qH: "qwenhiller"}
+function bytesToHillerSys(b) {
 	var biggest = hillers[hillers.slice(1).reduce(function(c,d,idx){return((b<(d[1]*4))&&(b>hillers[idx][1]))?(idx+1):c},0)]
 	return [b/biggest[1], biggest[0], names[biggest[0]]]
 }
+// original code continues beyond this comment!
 
 net.createServer({/*noDelay:true*/}, async function(tcp) {
-	// tcp.on("data",function(a){console.log("eyy i got smth over here (b4 middle man init)", a+"")})
 	var hndshk = ""+(await new Promise(function(a){tcp.once("data",a)}))
-	if (!((hndshk.startsWith("HANDSHAKE / GURT/1.0.0\r\n"))&&(hndshk.endsWith("\r\n\r\n")))) {console.log("well fuck");tcp.destroy();return}
+	if (!((hndshk.startsWith("HANDSHAKE / GURT/1.0.0\r\n"))&&(hndshk.endsWith("\r\n\r\n"))))return(tcp.destroy())
 	await new Promise(function(a){tcp.write(Buffer.from(`
 GURT/1.0.0 101 SWITCHING_PROTOCOLS
 content-length: 0
 encryption: TLS/1.3
-server: GURT/1.0.0
+server: hotfnx/0
 alpn: GURT/1.0
 date: ${new Date().toUTCString()}
 gurt-version: 1.0.0
 
 
 `.slice(1,-1).replaceAll("\n","\r\n"),"utf8"),null,a)})
-	/*
-		function duplexProxy(toRead,toWrite,...rest) {
-			Duplex.constructor.apply(this,rest)
-			this._read = toRead
-			this._write = toWrite
-		}
-		duplexProxy.prototype = new Duplex()
-		duplexProxy.prototype.constructor = duplexProxy
-		var middleMan = new duplexProxy(function() {
-			console.log("eyyy im reading over here")
-		}, function(a,b,c) {
-			console.log("eyyy im writing over here", a+"")
-			tcp.write(a,b,c)
-		})
-	*/
 	var tls = new (require("tls").TLSSocket)(tcp, {isServer: true, minVersion: "TLSv1.3", maxVersion: "TLSv1.3", key: read(key), cert: read(cert), requestCert: false, rejectUnauthorized: false})
 	var rawReq = ""+(await new Promise(function(a){tls.once("data",a)}))
 	var [, mtd, p] = rawReq.match(new RegExp("(^[A-Z]+) (\\/[\\/A-Za-z0-9\\-._~!\\$&'()*+,;=:@\\%]*)"))
 	var hdrs = {
 		"content-type": "text/text"
 	}
-	var hdlr = ((handlers[p])||(handlers.default))
+	var hdlr = blynas(p)
+	var lines = rawReq.split("\r\n").slice(1)
+	var lastHdr = 0
+	for (var l of lines) {
+		if (!(l.includes(":"))) break
+		lastHdr++
+	}
+	var reqHdrs = Object.fromEntries(lines.slice(0,lastHdr).map(function(a){return[a.slice(0,a.indexOf(":")),a.slice(a.indexOf(":")+1).trimStart()]}))
 	var hReq = {
 		url: p,
-		method: mtd
+		method: mtd,
+		hdrs: reqHdrs
 	}
 	var hRes = {
 		h(hdr, val) {
@@ -88,19 +82,18 @@ gurt-version: 1.0.0
 	var resp = Buffer.from(await hdlr(hReq, hRes))
 	if (typeof(stats[hRes.status])!="string") hRes.status = "OK" // fallback in case some stupid future me decided to troll present me
 	var biggest = bytesToHillerSys(resp.length)
-	// `\x1b[1m${sz.toFixed(8)}\x1b[0m`,unit[0],`(${names[unit[0]]}${(sz==1)?"":"s"})`
-	console.log(`${mtd} ${p} GURT/1.0.0: ${stats[hRes.status]} (${hdrs["content-type"]}, ${biggest[0].toFixed(8)} ${biggest[2]+((biggest[0]===1)?"":"s")} (${resp.length}B))`)
+	hRes.h("content-length",resp.length)
 	await new Promise(function(a){tls.write(Buffer.concat([Buffer.from(`
 GURT/1.0.0 ${stats[hRes.status]} ${hRes.status}
 ${Object.entries(hdrs).map(function(a){return(a).join(":\x20")}).join("\n")}
 date: ${new Date().toUTCString()}
-content-length: ${resp.length}
 
 
 `.slice(1,-1).replaceAll("\n","\r\n"),"utf8"),resp]),null,a)})
-	await new Promise(function(a){setTimeout(a,2e3)})
-	tls.destroy()
-	tcp.destroy()
+	tls.end()
+	tcp.end()
+	// `\x1b[1m${sz.toFixed(8)}\x1b[0m`,unit[0],`(${names[unit[0]]}${(sz==1)?"":"s"})`
+	console.log(`${mtd} ${p} GURT/1.0.0: \x1b[1m${stats[hRes.status]}\x1b[0m (${hdrs["content-type"]}, ${biggest[0].toFixed(8)} ${biggest[2]+((biggest[0]===1)?"":"s")} (${resp.length}B))`)
 }).listen(4878, function() {
 	console.log("get\n  yOur\n:4878\n  Ready")
 })
