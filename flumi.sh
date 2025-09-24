@@ -1,6 +1,4 @@
 #!/bin/bash
-
-# Start Xpra server
 export XDG_RUNTIME_DIR=$HOME/.xpra-runtime
 mkdir -p $XDG_RUNTIME_DIR
 export XKB_CONFIG_ROOT=/usr/share/X11/xkb
