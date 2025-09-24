@@ -13,6 +13,6 @@ then just run `node servre.js` (yes, it's misspelled)
 
 if needed, edit lines 4-6 to change up the certificates or whether to use which version of the certs.
 
-also you might need to `mkcert -install` or remake them certs.
+also you might need to `mkcert -install` or [remake them certs](https://docs.gurted.com/docs/gurt-server#development-certificates).
 
 prerequisites: node (+npm), mkcert
