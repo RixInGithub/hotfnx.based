@@ -39,16 +39,25 @@ function staticHost(root, ...f) {
 async function iThinkItsA_404({url:a}, res) {
 	res.status = "NOT_FOUND"
 	// return `<html><body><p>why dawg, ofc you know ${req.url} doesnt exist homie</p></body></html>`
-	return require("ejs").render(require("fs").readFileSync("ejs/notFound.ejs","utf8"), {a})
+	// return require("ejs").render(require("fs").readFileSync("ejs/notFound.ejs","utf8"), {a})
+	return"" // flumi displays its own 404 page sadly.
 }
 
 var basicRules = new Map(Object.entries({
-	...staticHost(require("path").join(__dirname,"static"), "/", "/style.css", "/Hilaricons.woff2"),
+	...staticHost(require("path").join(__dirname,"static"), "/", "/style.css", "/hotfnx.css", "/Hilaricons.woff2"),
 	...staticHost(require("path").join(__dirname,"pix"), ...require("fs").readdirSync(require("path").join(__dirname,"pix")).map(function(a){return"/"+a})),
 	...staticHost(require("path").join(__dirname,"trebuchetms"), ...require("fs").readdirSync(require("path").join(__dirname,"trebuchetms")).map(function(a){return"/"+a})),
 	["/testmajij/"](req, res) {
 		res.h("content-type", "text/html")
 		return redirector("/testmajij/", "/") // yes, this is VERY intentional
+	},
+	["/dash/"](req, res) {
+		res.h("content-type", "text/html")
+		return require("ejs").render(require("fs").readFileSync("ejs/partial2full.ejs","utf8"))
+	},
+	["/login/"](req, res) {
+		res.h("content-type", "text/html")
+		return require("ejs").render(require("fs").readFileSync("ejs/login.ejs","utf8"), {q:req.q})
 	}
 }))
 

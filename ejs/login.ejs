@@ -1,0 +1,85 @@
+<html>
+	<head>
+		<title><%- (q.get("req")=="register")?"Register":"Login" %></title>
+		<font name="trebuchetms" src="/TrebuchetMS.woff2">
+		<icon src="gurt://localhost/hotfnx16.png">
+		<style>
+			body {
+				bg-[#ddd]
+				w-full
+				font-trebuchetms
+			}
+			
+			#idemfk {
+				w-full
+				flex
+				flex-col
+				items-center
+			}
+			
+			.hdr {h-20 text-xl}
+
+			.tabs {
+				bg-[#ccc]
+				w-[800px]
+				pt-2
+				flex
+				flex-row
+			}
+			
+			.tabs > div {font-trebuchetms text-xs ml-2 text-[#000] bg-[#ccc] px-2 py-1 rounded-0 cursor-pointer hover:bg-[#ddd] active:bg-[#ddd]}
+			.selected {bg-[#eee] hover:bg-[#eee] active:bg-[#eee]}
+			
+			form {w-[800px]}
+			.innerForm {
+				flex
+				flex-col
+				p-4
+				gap-4
+				bg-[#eee]
+			}
+			
+			input {font-trebuchetms text-xs p-1 border-none bg-[#fff] w-[500px]}
+			
+			.submitero {mt-20 p-2 rounded-lg text-[#fff] bg-emerald-500 w-shrink cursor-pointer}
+		</style>
+		<script type="application/lua">
+			do -- yay
+				local currTab = 1
+				local tabs = {gurt.select("#logn"), gurt.select("#rgtr")}
+				tabs[<%- ((["register"].indexOf(q.get("req"))+2)%2)+1 %>]:hide()
+				for idx, btn in ipairs(gurt.select(".tabs").children) do
+					btn:on("click", function()
+						if currTab==idx then return end -- code below would be just toggling our state twice, why waste lua vm's time?
+						gurt.select(".selected").classList:remove("selected")
+						btn.classList:add("selected")
+						local oldTab = currTab
+						currTab = idx
+						tabs[oldTab]:hide()
+						tabs[currTab]:show()
+					end)
+				end
+			end
+		</script>
+	</head>
+	<body>
+		<div id="idemfk">
+			<h1 style="hdr">Please log in to access hotfnx.based.</h1>
+			<div style="tabs">
+				<div<% if (q.get("req")!="register") { %> style="selected"<% } %>><div>Login</div></div>
+				<div<% if (q.get("req")=="register") { %> style="selected"<% } %>><div>Register</div></div>
+			</div>
+			<form id="logn"><div style="innerForm">
+				<p style="flex flex-row text-sm items-center justify-center"><span>Username:&#160;</span><input required="true" placeholder="&#160;" style="text-xs"/></p>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs"/></p>
+				<div style="flex flex-col justify-center items-center w-full"><div style="submitero"><div>Log in!</div></div></div>
+			</div></form>
+			<form id="rgtr"><div style="innerForm">
+				<p style="flex flex-row text-sm items-center justify-center"><span>Username:&#160;</span><input required="true" placeholder="&#160;" style="text-xs"/></p>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs"/></p>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Confirm password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs"/></p>
+				<div style="flex flex-col justify-center items-center w-full"><div style="submitero"><div>Create a new account!</div></div></div>
+			</div></form>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,23 @@
+<html>
+	<head>
+		<title>hotfnx.based</title>
+		<font name="hilaricons" src="/Hilaricons.woff2">
+		<font name="trebuchetms" src="/TrebuchetMS.woff2">
+		<icon src="gurt://localhost/hotfnx16.png">
+		<script type="application/lua">
+			(function() -- login lock
+				for nm, data in pairs(gurt.crumbs.getAll()) do
+					if nm == "sess" then
+						print("found session crumb!", data.value)
+						-- todo: from ejs side, make this script call some lua script with loadstring.
+						return
+					end
+				end
+				gurt.location.goto("/login/")
+			end)() -- this solution gives you local scope AND return :3
+		</script>
+	</head>
+	<body>
+		
+	</body>
+</html>

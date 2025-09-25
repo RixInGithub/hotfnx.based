@@ -1,1 +1,2 @@
-xpra control :100 start "xterm -bg white -fg black -e \"node servre.js\" ; yes"
+#!/bin/bash
+xpra control :100 start "xterm -bg white -fg black -e \"node servre.js ; yes > /dev/null\""

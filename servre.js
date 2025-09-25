@@ -56,7 +56,8 @@ gurt-version: 1.0.0
 `.slice(1,-1).replaceAll("\n","\r\n"),"utf8"),null,a)})
 	var tls = new (require("tls").TLSSocket)(tcp, {isServer: true, minVersion: "TLSv1.3", maxVersion: "TLSv1.3", key: read(key), cert: read(cert), requestCert: false, rejectUnauthorized: false})
 	var rawReq = ""+(await new Promise(function(a){tls.once("data",a)}))
-	var [, mtd, p] = rawReq.match(new RegExp("(^[A-Z]+) (\\/[\\/A-Za-z0-9\\-._~!\\$&'()*+,;=:@\\%]*)"))
+	var [, mtd, p, q] = rawReq.match(new RegExp("(^[A-Z]+) (\\/[\\/A-Za-z0-9\\-._~!\\$&'()*+,;=:@\\%]*)(\\?[^ ]*)?"))
+	q=new URLSearchParams((q?q:"")+"")
 	var hdrs = {
 		"content-type": "text/text"
 	}
@@ -71,7 +72,8 @@ gurt-version: 1.0.0
 	var hReq = {
 		url: p,
 		method: mtd,
-		hdrs: reqHdrs
+		hdrs: reqHdrs,
+		q
 	}
 	var hRes = {
 		h(hdr, val) {
@@ -80,7 +82,8 @@ gurt-version: 1.0.0
 		status: "OK"
 	}
 	var resp = Buffer.from(await hdlr(hReq, hRes))
-	if (typeof(stats[hRes.status])!="string") hRes.status = "OK" // fallback in case some stupid future me decided to troll present me
+	console.log(hRes.status)
+	if (typeof(stats[hRes.status])!="number") hRes.status = "OK" // fallback in case some stupid future me decided to troll present me
 	var biggest = bytesToHillerSys(resp.length)
 	hRes.h("content-length",resp.length)
 	await new Promise(function(a){tls.write(Buffer.concat([Buffer.from(`
@@ -94,6 +97,6 @@ date: ${new Date().toUTCString()}
 	tcp.end()
 	// `\x1b[1m${sz.toFixed(8)}\x1b[0m`,unit[0],`(${names[unit[0]]}${(sz==1)?"":"s"})`
 	console.log(`${mtd} ${p} GURT/1.0.0: \x1b[1m${stats[hRes.status]}\x1b[0m (${hdrs["content-type"]}, ${biggest[0].toFixed(8)} ${biggest[2]+((biggest[0]===1)?"":"s")} (${resp.length}B))`)
-}).listen(4878, function() {
+}).listen(parseInt(process.argv[2]||4878), function() {
 	console.log("get\n  yOur\n:4878\n  Ready")
 })
