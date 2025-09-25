@@ -1,7 +1,7 @@
 net = require("net")
 void({readFileSync:read}=require("fs"))
 
-localhost = true
+localhost = !(process.argv[2]) // only use real hotfnx.based certs if we are on gattodev servers
 key = `key${localhost?"Local":""}.pem`
 cert = `cert${localhost?"Local":""}.pem`
 blynas = require("./blynublynai.js")
@@ -97,6 +97,6 @@ date: ${new Date().toUTCString()}
 	tcp.end()
 	// `\x1b[1m${sz.toFixed(8)}\x1b[0m`,unit[0],`(${names[unit[0]]}${(sz==1)?"":"s"})`
 	console.log(`${mtd} ${p} GURT/1.0.0: \x1b[1m${stats[hRes.status]}\x1b[0m (${hdrs["content-type"]}, ${biggest[0].toFixed(8)} ${biggest[2]+((biggest[0]===1)?"":"s")} (${resp.length}B))`)
-}).listen(parseInt(process.argv[2]||4878), function() {
-	console.log("get\n  yOur\n:4878\n  Ready")
+}).listen(port=parseInt(process.argv[2]||4878), function() {
+	console.log(`get\n  yOur\n:${port}\n  Ready`)
 })
