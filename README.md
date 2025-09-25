@@ -15,4 +15,6 @@ if needed, edit lines 4-6 to change up the certificates or whether to use which 
 
 also you might need to `mkcert -install` or [remake them certs](https://docs.gurted.com/docs/gurt-server#development-certificates).
 
+want it to run on a different port? just pass an arg to `node servre.js` dude
+
 prerequisites: node (+npm), mkcert
