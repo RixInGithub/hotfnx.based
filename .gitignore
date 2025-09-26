@@ -1,6 +1,5 @@
 flumiInstall/*
 !flumiInstall/*.7z
-# *.pem
-# !*Local.pem
+*Local.pem
 node_modules/
 package-lock.json
