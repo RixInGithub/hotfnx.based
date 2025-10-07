@@ -3,11 +3,11 @@
 		<title>hotfnx.based</title>
 		<font name="hilaricons" src="/Hilaricons.woff2">
 		<font name="trebuchetms" src="/TrebuchetMS.woff2">
-		<icon src="gurt://localhost/hotfnx16.png">
+		<icon src="gurt://localhost/hotfnx512.png">
 		<script type="application/lua">
 			(function() -- login lock
 				for nm, data in pairs(gurt.crumbs.getAll()) do
-					if nm == "sess" then
+					if nm == "ss.DONOTSHARE" then
 						print("found session crumb!", data.value)
 						-- todo: from ejs side, make this script call some lua script with loadstring.
 						return

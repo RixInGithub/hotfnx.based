@@ -1,5 +1,6 @@
 net = require("net")
 void({readFileSync:read}=require("fs"))
+db = require("./supabase")
 
 localhost = !(process.argv[2]) // only use real hotfnx.based certs if we are on gattodev servers
 key = `key${localhost?"Local":""}.pem`
@@ -40,7 +41,7 @@ function bytesToHillerSys(b) {
 }
 // original code continues beyond this comment!
 
-net.createServer({/*noDelay:true*/}, async function(tcp) {
+yogurt = net.createServer({/*noDelay:true*/}, async function(tcp) {
 	var hndshk = ""+(await new Promise(function(a){tcp.once("data",a)}))
 	if (!((hndshk.startsWith("HANDSHAKE / GURT/1.0.0\r\n"))&&(hndshk.endsWith("\r\n\r\n"))))return(tcp.destroy())
 	await new Promise(function(a){tcp.write(Buffer.from(`
@@ -63,18 +64,15 @@ gurt-version: 1.0.0
 			"content-type": "text/text"
 		}
 		var hdlr = blynas(p)
-		var lines = rawReq.split("\r\n").slice(1)
-		var lastHdr = 0
-		for (var l of lines) {
-			if (!(l.includes(":"))) break
-			lastHdr++
-		}
-		var reqHdrs = Object.fromEntries(lines.slice(0,lastHdr).map(function(a){return[a.slice(0,a.indexOf(":")),a.slice(a.indexOf(":")+1).trimStart()]}))
+		var lines = rawReq.slice(0,rawReq.indexOf("\r\n\r\n")).split("\r\n").slice(1)
+		var reqHdrs = Object.fromEntries(lines.map(function(a){return[a.slice(0,a.indexOf(":")),a.slice(a.indexOf(":")+1).trimStart()]}))
+		var body = rawReq.slice(rawReq.indexOf("\r\n\r\n")+4).slice(0,parseInt(reqHdrs["content-length"]||"0"))
 		var hReq = {
 			url: p,
 			method: mtd,
 			hdrs: reqHdrs,
-			q
+			q,
+			body
 		}
 		var hRes = {
 			h(hdr, val) {
@@ -83,7 +81,6 @@ gurt-version: 1.0.0
 			status: "OK"
 		}
 		var resp = Buffer.from(await hdlr(hReq, hRes))
-		console.log(hRes.status)
 		if (typeof(stats[hRes.status])!="number") hRes.status = "OK" // fallback in case some stupid future me decided to troll present me
 		var biggest = bytesToHillerSys(resp.length)
 		hRes.h("content-length",resp.length)
@@ -99,6 +96,12 @@ date: ${new Date().toUTCString()}
 		// `\x1b[1m${sz.toFixed(8)}\x1b[0m`,unit[0],`(${names[unit[0]]}${(sz==1)?"":"s"})`
 		console.log(`${mtd} ${p} GURT/1.0.0: \x1b[1m${stats[hRes.status]}\x1b[0m (${hdrs["content-type"]}, ${biggest[0].toFixed(8)} ${biggest[2]+((biggest[0]===1)?"":"s")} (${resp.length}B))`)
 	})
-}).listen(port=parseInt(process.argv[2]||4878), function() {
-	console.log(`get\n  yOur\n:${port}\n  Ready`)
 })
+
+!async function() {
+	await db("SELECT 1 as OK") // db helth check
+	port=parseInt(process.argv[2]||4878)
+	yogurt.listen(port, async function() {
+		console.log(`get\n  yOur\n:${port}\n  Ready`)
+	})
+}()

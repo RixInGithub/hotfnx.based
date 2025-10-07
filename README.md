@@ -1,4 +1,5 @@
 # hotfnx.based
+ah yes, hotfnx.based, the ultimate "competitor" to arsonflare. this has no purpose other than being just a serverless function hoster.
 ## how to run...
 ### ...flumi?
 decompress either `flumiInstall/flumi100.7z` or `flumiInstall/flumi102.7z` or whatever version into the `flumiInstall` folder

@@ -1,7 +1,8 @@
-<html>
+<html> <% var[lognTxt,rgtrTxt]=["Log in!","Create a new account!"] %>
 	<head>
 		<title><%- (q.get("req")=="register")?"Register":"Login" %></title>
 		<font name="trebuchetms" src="/TrebuchetMS.woff2">
+		<font name="trebuchetmsbd" src="/TrebuchetMSBold.woff2">
 		<icon src="gurt://localhost/hotfnx512.png">
 		<style>
 			body {
@@ -39,24 +40,84 @@
 				bg-[#eee]
 			}
 			
-			input {font-trebuchetms text-xs p-1 border-none bg-[#fff] w-[500px]}
+			input {font-trebuchetms text-xs p-1 border-none bg-[#fff] w-[512px]}
 			
-			.submitero {mt-20 p-2 rounded-lg text-[#fff] bg-emerald-500 w-shrink cursor-pointer}
+			.submitero {mt-16 p-2 rounded-lg text-[#fff] text-sm bg-emerald-500 w-shrink cursor-pointer}
+			
+			#lErr, #rErr {mt-5 font-trebuchetmsbd text-[#f00] text-base flex text-center w-shrink mx-auto justify-center items-center}
 		</style>
 		<script type="application/lua">
 			do -- yay
+				for nm, data in pairs(gurt.crumbs.getAll()) do
+					if nm == "ss.DONOTSHARE" then
+						gurt.location.goto("/dash/")
+						return
+					end
+				end
+				local tabsDisabled = false
 				local currTab = 1
 				local tabs = {gurt.select("#logn"), gurt.select("#rgtr")}
 				tabs[<%- ((["register"].indexOf(q.get("req"))+2)%2)+1 %>]:hide()
+				local function setErr(e)
+					e = tostring(e) -- fuck them booleans
+					setErr = function() trace.warn("error already set to: "..e) end
+					local eEl = gurt.select(string.format("#%cErr",108+(36*(currTab-1))))
+					eEl.text = e
+					eEl:show()
+					tabsDisabled = false
+				end
+				gurt.select("#lErr"):hide()
+				gurt.select("#rErr"):hide()
 				for idx, btn in ipairs(gurt.select(".tabs").children) do
 					btn:on("click", function()
 						if currTab==idx then return end -- code below would be just toggling our state twice, why waste lua vm's time?
+						if tabsDisabled then return end -- js so happened to match length lmfao
 						gurt.select(".selected").classList:remove("selected")
 						btn.classList:add("selected")
 						local oldTab = currTab
 						currTab = idx
 						tabs[oldTab]:hide()
-						tabs[currTab]:show()
+						tabs[idx]:show()
+					end)
+					gurt.selectAll(".submitero")[idx]:on("click", function() -- first arg contains a table with x and y props for some reason lmfao
+						if tabsDisabled then return end
+						tabsDisabled = true
+						local me = gurt.selectAll(".submitero")[idx]
+						local myAction = me.children[1].text
+						local resp
+						if myAction == "<%- lognTxt %>" then
+							resp = fetch("/api/account/", {
+								method = "POST",
+								body = JSON.stringify({
+									req = "l",
+									user = gurt.select("#lUser").value,
+									pass = gurt.select("#lPass").value
+								})
+							})
+						end
+						if not resp then
+							resp = fetch("/api/account/", {
+								method = "POST",
+								body = JSON.stringify({
+									req = "r",
+									user = gurt.select("#rUser").value,
+									pass = gurt.select("#rPass").value,
+									cnfm = gurt.select("#rCnfm").value
+								})
+							})
+						end
+						if resp.status ~= 200 then
+							tabsDisabled = false
+							if resp.status ~= 400 then
+								setErr(string.format("%d: %s", resp.status, resp.statusText))
+								return
+							end
+							setErr((resp:json()).error)
+							return
+						end
+						local out = resp:json()
+						gurt.crumbs.set({name = "ss.DONOTSHARE", value = out.sessId})
+						gurt.location.goto("/dash/")
 					end)
 				end
 			end
@@ -70,18 +131,17 @@
 				<div<% if (q.get("req")=="register") { %> style="selected"<% } %>><div>Register</div></div>
 			</div>
 			<form id="logn"><div style="innerForm">
-				<p style="flex flex-row text-sm items-center justify-center"><span>Username:&#160;</span><input required="true" placeholder="&#160;" style="text-xs"/></p>
-				<p style="flex flex-row text-sm items-center justify-center"><span>Password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs"/></p>
-				<div style="flex flex-col justify-center items-center w-full"><div style="submitero"><div>Log in!</div></div></div>
-				<script type="application/lua">
-					
-				</script>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Username:&#160;</span><input required="true" placeholder="&#160;" style="text-xs" id="lUser"/></p>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs" id="lPass"/></p>
+				<div style="flex flex-col justify-center items-center w-full"><div style="submitero"><div><%- lognTxt %></div></div></div>
+				<p id="lErr"><span>fuck you, thats what i want to say bitch</span></p>
 			</div></form>
 			<form id="rgtr"><div style="innerForm">
-				<p style="flex flex-row text-sm items-center justify-center"><span>Username:&#160;</span><input required="true" placeholder="&#160;" style="text-xs"/></p>
-				<p style="flex flex-row text-sm items-center justify-center"><span>Password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs"/></p>
-				<p style="flex flex-row text-sm items-center justify-center"><span>Confirm password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs"/></p>
-				<div style="flex flex-col justify-center items-center w-full"><div style="submitero"><div>Create a new account!</div></div></div>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Username:&#160;</span><input required="true" placeholder="&#160;" style="text-xs" id="rUser"/></p>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs" id="rPass"/></p>
+				<p style="flex flex-row text-sm items-center justify-center"><span>Confirm password:&#160;</span><input type="password" required="true" placeholder="&#160;" style="text-xs" id="rCnfm"/></p>
+				<div style="flex flex-col justify-center items-center w-full"><div style="submitero"><div><%- rgtrTxt %></div></div></div>
+				<p id="rErr"><span>if this popped up, please report this as a bug</span></p>
 			</div></form>
 		</div>
 	</body>
